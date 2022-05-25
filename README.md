@@ -4,7 +4,7 @@ Personallogger is a logging library wriiten in Java. It was made for fun, not fo
 
 The logger uses a PrintStream as the underlying object to print data. Any printing issues should come from there.
 
-The time stamp of each logger as well as the colour of each level can be customized. The time stamp can be disabled entirely.
+The time stamp of each logger as well as the colour of each level can be customized or disabled.
 
 To log anything either call the log method and specify the level or call the method named after a level. For all levels, see [log levels](#Log Levels) below. The toString() method is called on the given object.
 
