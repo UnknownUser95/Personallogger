@@ -17,23 +17,27 @@ enum LogLevel {
 		this.colour = colour;
 	}
 	
+	/**
+	 * return the name of this level.
+	 * @return The name.
+	 */
 	public String getName() {
 		return name;
 	}
 	
+	/**
+	 * Returns the colour of this level.
+	 * @return The current colour.
+	 */
 	public ANSICodes getColour() {
 		return colour;
 	}
 	
+	/**
+	 * Changes the colour of this level.
+	 * @param colour The new colour of this level.
+	 */
 	public void setColour(ANSICodes colour) {
 		this.colour = colour;
-	}
-	
-	public String colourName() {
-		if(this == NONE) {
-			return "";
-		}
-		
-		return ANSICodes.colourString(name + ": ", colour);
 	}
 }
