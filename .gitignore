@@ -3,3 +3,6 @@
 .project
 bin
 .classpath
+
+included
+Test
