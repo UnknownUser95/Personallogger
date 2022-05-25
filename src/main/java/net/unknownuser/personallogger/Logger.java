@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 
 public abstract class Logger {
 	
-	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
+	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss:SS");
 	private ZoneId timezone = ZoneId.of("UTC");
 	
 	protected PrintStream logStream;

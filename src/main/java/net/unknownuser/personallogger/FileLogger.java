@@ -17,19 +17,11 @@ public class FileLogger extends Logger {
 	
 	// ---------- get methods for loggers ----------
 	
-	public static FileLogger getLogger() {
-		return getLogger(new File("log.log"));
-	}
-	
 	public static FileLogger getLogger(File logFile) {
 		FileLogger logger = null;
 		boolean appendMessage = logFile.exists();
 		
 		try {
-//			if(!logFile.createNewFile()) {
-//				System.out.println("logfile already exists, appending");
-//			}
-			
 			logger = new FileLogger(new PrintStream(new FileOutputStream(logFile, true)));
 			
 			if(appendMessage) {
@@ -43,7 +35,15 @@ public class FileLogger extends Logger {
 		return logger;
 	}
 	
+	public static FileLogger getLogger() {
+		return getLogger(new File("log.log"));
+	}
+	
 	public static FileLogger getLogger(File logFile, ZoneId zone) {
+		if(!logFile.isFile()) {
+			return null;
+		}
+		
 		FileLogger logger = getLogger(logFile);
 		
 		if(logger != null) {
@@ -54,6 +54,10 @@ public class FileLogger extends Logger {
 	}
 	
 	public static FileLogger getLogger(File logFile, ZoneId zone, DateTimeFormatter format) {
+		if(!logFile.isFile()) {
+			return null;
+		}
+		
 		FileLogger logger = getLogger(logFile);
 		
 		if(logger != null) {
