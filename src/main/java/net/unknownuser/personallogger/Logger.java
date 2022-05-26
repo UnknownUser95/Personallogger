@@ -4,11 +4,12 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * A class for generic loggers holding the basic logging methods.
  */
-public abstract class Logger {
+public abstract class Logger implements Runnable {
 	
 	protected DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss:SS");
 	protected ZoneId timezone = ZoneId.of("UTC");
@@ -16,6 +17,9 @@ public abstract class Logger {
 	protected PrintStream logStream;
 	
 	private boolean timeStampEnabled = true;
+	
+	private LinkedBlockingQueue<Log> toDoLogs = new LinkedBlockingQueue<>();
+	private Thread owner;
 	
 	// -------------------- setters and getters --------------------
 	
@@ -70,6 +74,15 @@ public abstract class Logger {
 	// -------------------- constructors --------------------
 	
 	/**
+	 * Used for creating a separate thread for the logger  
+	 */
+	private void createThread() {
+		Thread thisLogger = new Thread(this);
+		owner = Thread.currentThread();
+		thisLogger.start();
+	}
+	
+	/**
 	 * Creates a logger, which sends all logs to the specified PrintStream.
 	 * 
 	 * @param where The PrintStream all logs are written to.
@@ -78,6 +91,7 @@ public abstract class Logger {
 		super();
 		timezone = ZoneId.systemDefault();
 		logStream = where;
+		createThread();
 	}
 	
 	/**
@@ -91,6 +105,7 @@ public abstract class Logger {
 		super();
 		logStream = where;
 		setTimezone(timezone, false);
+		createThread();
 	}
 	
 	/**
@@ -106,6 +121,24 @@ public abstract class Logger {
 		this.logStream = logStream;
 		setTimezone(timezone, false);
 		setDateFormat(format, false);
+		createThread();
+	}
+	
+	// -------------------- run on other thread --------------------
+	
+	@Override
+	public void run() {
+		try {
+			// the owner thread. likely the main thread, must be alive
+			// there also must not be any logs left to do
+			while(owner.isAlive() || !toDoLogs.isEmpty()) {
+				Log currentlog = toDoLogs.take();
+				internalLog(currentlog.getData(), currentlog.getLevel());
+			}
+		} catch(InterruptedException exc) {
+			System.out.println("interrupted");
+			internalLog("interrupted while logging", LogLevel.ERROR);
+		}
 	}
 	
 	// -------------------- attribute changers --------------------
@@ -162,7 +195,8 @@ public abstract class Logger {
 			return;
 		}
 		
-		internalLog(o, level);
+//		internalLog(o, level);
+		toDoLogs.offer(new Log(o, level));
 	}
 	
 	/**
@@ -171,7 +205,8 @@ public abstract class Logger {
 	 * @param o The object to be logged.
 	 */
 	public void log(Object o) {
-		internalLog(o, LogLevel.NONE);
+//		internalLog(o, LogLevel.NONE);
+		toDoLogs.offer(new Log(o, LogLevel.NONE));
 	}
 	
 	/**
@@ -180,7 +215,8 @@ public abstract class Logger {
 	 * @param o The object to be logged.
 	 */
 	public void info(Object o) {
-		internalLog(o, LogLevel.INFO);
+//		internalLog(o, LogLevel.INFO);
+		toDoLogs.offer(new Log(o, LogLevel.INFO));
 	}
 	
 	/**
@@ -189,7 +225,8 @@ public abstract class Logger {
 	 * @param o The object to be logged.
 	 */
 	public void debug(Object o) {
-		internalLog(o, LogLevel.DEBUG);
+//		internalLog(o, LogLevel.DEBUG);
+		toDoLogs.offer(new Log(o, LogLevel.DEBUG));
 	}
 	
 	/**
@@ -198,7 +235,8 @@ public abstract class Logger {
 	 * @param o The object to be logged.
 	 */
 	public void warning(Object o) {
-		internalLog(o, LogLevel.WARNING);
+//		internalLog(o, LogLevel.WARNING);
+		toDoLogs.offer(new Log(o, LogLevel.WARNING));
 	}
 	
 	/**
@@ -207,7 +245,8 @@ public abstract class Logger {
 	 * @param o The object to be logged.
 	 */
 	public void error(Object o) {
-		internalLog(o, LogLevel.ERROR);
+//		internalLog(o, LogLevel.ERROR);
+		toDoLogs.offer(new Log(o, LogLevel.ERROR));
 	}
 	
 	/**
@@ -216,6 +255,7 @@ public abstract class Logger {
 	 * @param o The object to be logged.
 	 */
 	public void none(Object o) {
-		internalLog(o, LogLevel.NONE);
+//		internalLog(o, LogLevel.NONE);
+		toDoLogs.offer(new Log(o, LogLevel.NONE));
 	}
 }
